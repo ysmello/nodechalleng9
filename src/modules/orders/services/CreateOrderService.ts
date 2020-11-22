@@ -8,8 +8,9 @@ import Order from '../infra/typeorm/entities/Order';
 import IOrdersRepository from '../repositories/IOrdersRepository';
 
 interface IProduct {
-  id: string;
+  product_id: string;
   quantity: number;
+  price: number;
 }
 
 interface IRequest {
@@ -26,7 +27,20 @@ class CreateOrderService {
   ) {}
 
   public async execute({ customer_id, products }: IRequest): Promise<Order> {
-    // TODO
+    const findedCustomer = await this.customersRepository.findById(customer_id);
+
+    if (!findedCustomer) {
+      throw new AppError('Customer not founded');
+    }
+
+    const orderService = await this.ordersRepository.create({
+      customer: findedCustomer,
+      products,
+    });
+
+    // await this.productsRepository.create({: orderService});
+
+    return orderService;
   }
 }
 
