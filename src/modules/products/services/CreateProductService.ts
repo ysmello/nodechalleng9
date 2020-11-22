@@ -14,7 +14,7 @@ interface IRequest {
 @injectable()
 class CreateProductService {
   constructor(
-    @inject('ProductsRepository')
+    @inject('Products')
     private productsRepository: IProductsRepository,
   ) {}
 
