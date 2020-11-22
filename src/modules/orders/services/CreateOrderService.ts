@@ -4,13 +4,13 @@ import AppError from '@shared/errors/AppError';
 
 import IProductsRepository from '@modules/products/repositories/IProductsRepository';
 import ICustomersRepository from '@modules/customers/repositories/ICustomersRepository';
+import Product from '@modules/products/infra/typeorm/entities/Product';
 import Order from '../infra/typeorm/entities/Order';
 import IOrdersRepository from '../repositories/IOrdersRepository';
 
 interface IProduct {
-  product_id: string;
+  id: string;
   quantity: number;
-  price: number;
 }
 
 interface IRequest {
@@ -21,24 +21,29 @@ interface IRequest {
 @injectable()
 class CreateOrderService {
   constructor(
+    @inject('OrdersRepository')
     private ordersRepository: IOrdersRepository,
+
+    @inject('ProductsRepository')
     private productsRepository: IProductsRepository,
+
+    @inject('CustomersRepository')
     private customersRepository: ICustomersRepository,
   ) {}
 
   public async execute({ customer_id, products }: IRequest): Promise<Order> {
-    const findedCustomer = await this.customersRepository.findById(customer_id);
+    const customer = await this.customersRepository.findById(customer_id);
 
-    if (!findedCustomer) {
+    if (!customer) {
       throw new AppError('Customer not founded');
     }
 
-    const orderService = await this.ordersRepository.create({
-      customer: findedCustomer,
-      products,
-    });
+    const allProducts = await this.productsRepository.findAllById(products);
 
-    // await this.productsRepository.create({: orderService});
+    const orderService = await this.ordersRepository.create({
+      customer,
+      products: allProducts,
+    });
 
     return orderService;
   }
